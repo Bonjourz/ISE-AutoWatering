@@ -1,7 +1,6 @@
 #include "EdpPacket.h"
 #include "dht11.h"
 #include <WiFiLink.h>
-#include <inttypes.h>
 
 
 #define BAUDRATE 9600
@@ -11,13 +10,14 @@
 #define AUTHINFO "test233"
 
 
-char ssid[] = "dongyi320";     //  your network SSID (name)
-char pass[] = "dongyi320";  // your network password
+char ssid[] = "rebas_";     //  your network SSID (name)
+char pass[] = "babababa";  // your network password
 char hostname[] = "jjfaedp.hedevice.com";
 int port = 876;
 int ASignal_hmdty = A0;
 int ASignal_itsty = A1;
 int DHT11PIN = 9;
+int relayPIN = 3;
 
 int index = 0;
 int soilHmdty = 0;
@@ -90,8 +90,9 @@ void connectWifi(){
 void setup() {
     pinMode(ASignal_hmdty,INPUT); 
     pinMode(ASignal_itsty,INPUT);
+    pinMode(relayPIN,OUTPUT);
     Serial.begin(BAUDRATE);  
-    Serial.setTimeout(3000);   //设置find超时时间
+    //Serial.setTimeout(3000);   //设置find超时时间
     //try to connect WiFi
     connectWifi();
 
@@ -113,20 +114,27 @@ void setup() {
 
 void loop() 
 {
+  int received = 0;
+  //check commond
+  while (client.available()) {
+    char c = client.read();
+    received = 1;
+  }
+
   //read and display datas
   int soilHmdty_tmp = analogRead(ASignal_hmdty);//soil humidity
   int intensity_tmp = analogRead(ASignal_itsty);//light intensity
   DHT11.read(DHT11PIN);//air temperature and humidity
   int airHmdty_tmp = (int)DHT11.humidity;
   int airTemp_tmp = (int)DHT11.temperature;
-  Serial.print("soilHmdty_tmp = ");
-  Serial.println(soilHmdty_tmp);
-  Serial.print("intensity_tmp = ");
-  Serial.println(intensity_tmp);
-  Serial.print("airHmdty_tmp = ");
-  Serial.println(airHmdty_tmp);
-  Serial.print("airTemp_tmp = ");
-  Serial.println(airTemp_tmp);
+  //Serial.print("soilHmdty_tmp = ");
+  //Serial.println(soilHmdty_tmp);
+  //Serial.print("intensity_tmp = ");
+  //Serial.println(intensity_tmp);
+  //Serial.print("airHmdty_tmp = ");
+  //Serial.println(airHmdty_tmp);
+  //Serial.print("airTemp_tmp = ");
+  //Serial.println(airTemp_tmp);
   soilHmdty += soilHmdty_tmp;
   intensity += intensity_tmp;
   airHmdty += airHmdty_tmp;
@@ -134,7 +142,7 @@ void loop()
   index++;
 
   //send data
-  if(index == 10){
+  if(index == 100){
     soilHmdty = soilHmdty/index;
     intensity = intensity/index;
     airHmdty = airHmdty/index;
@@ -159,7 +167,22 @@ void loop()
     airTemp = 0;
     index = 0;
   }
-  delay(6000);
+
+  //if received signal do the watering
+  if(received){
+  
+  }
+
+  // if the server's disconnected, stop the client:
+  if (!client.connected()) {
+    Serial.println();
+    Serial.println("disconnecting from server.");
+    client.stop();
+
+    // do nothing forevermore:
+    while (true);
+  }
+  delay(600);
 }
 
 
