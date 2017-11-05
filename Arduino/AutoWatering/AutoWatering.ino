@@ -10,8 +10,8 @@
 #define AUTHINFO "test233"
 
 
-char ssid[] = "rebas_";     //  your network SSID (name)
-char pass[] = "babababa";  // your network password
+char ssid[] = "dongyi320";     //  your network SSID (name)
+char pass[] = "dongyi320";  // your network password
 char hostname[] = "jjfaedp.hedevice.com";
 int port = 876;
 int ASignal_hmdty = A0;
@@ -20,7 +20,7 @@ int DHT11PIN = 9;
 int relayPIN = 3;
 
 int index = 0;
-int soilHmdty = 0;
+long long int soilHmdty = 0;
 int intensity = 0;
 int airHmdty = 0;
 int airTemp = 0;
@@ -135,32 +135,32 @@ void loop()
   //Serial.println(airHmdty_tmp);
   //Serial.print("airTemp_tmp = ");
   //Serial.println(airTemp_tmp);
-  soilHmdty += soilHmdty_tmp;
+  soilHmdty += (long long int)soilHmdty_tmp;
   intensity += intensity_tmp;
   airHmdty += airHmdty_tmp;
   airTemp += airTemp_tmp;
   index++;
 
   //send data
-  if(index == 100){
+  if(index == 10){
     soilHmdty = soilHmdty/index;
     intensity = intensity/index;
     airHmdty = airHmdty/index;
     airTemp = airTemp/index;
     char send_buf[512];
     sprintf(send_buf, ",;humidity,%d;intensity,%d;airHumidity,%d;airTemperature,%d;",
-        soilHmdty, intensity, airHmdty, airTemp);
+        (int)soilHmdty, intensity, airHmdty, airTemp);
     edp.PacketSavedataSimpleString(NULL, send_buf);
     client.write(edp.GetData(), edp.GetWritepos());
     edp.ClearParameter();
     Serial.print("data sended: soilHmdty = ");  
-    Serial.println(soilHmdty);
+   // Serial.println(soilHmdty);
     Serial.print("data sended: intensity = ");  
-    Serial.println(intensity);
+   // Serial.println(intensity);
     Serial.print("data sended: airHmdty = ");  
-    Serial.println(airHmdty);
-    Serial.print("data sended: airTemp =  ");  
-    Serial.println(airTemp);
+   // Serial.println(airHmdty);
+    Serial.println("data sended: airTemp =  ");  
+    //Serial.println(airTemp);
     soilHmdty = 0;
     intensity = 0;
     airHmdty = 0;
@@ -170,7 +170,10 @@ void loop()
 
   //if received signal do the watering
   if(received){
-  
+    digitalWrite(relayPIN, HIGH);
+    delay(6000);
+    digitalWrite(relayPIN, LOW);
+    received = 0;
   }
 
   // if the server's disconnected, stop the client:
@@ -184,6 +187,4 @@ void loop()
   }
   delay(600);
 }
-
-
 
